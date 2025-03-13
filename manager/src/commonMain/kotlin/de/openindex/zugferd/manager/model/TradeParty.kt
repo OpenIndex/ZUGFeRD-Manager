@@ -39,6 +39,7 @@ data class TradeParty(
     val id: String? = null,
     val taxID: String? = null,
     val vatID: String? = null,
+    val registerNr: String? = null,
     val creditorReferenceId: String? = null,
     val imprint: String? = null,
     val description: String? = null,

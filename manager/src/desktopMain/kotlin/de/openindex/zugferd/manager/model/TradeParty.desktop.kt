@@ -22,6 +22,8 @@
 package de.openindex.zugferd.manager.model
 
 import de.openindex.zugferd.manager.utils.trimToNull
+import org.mustangproject.LegalOrganisation
+import org.mustangproject.SchemedID
 import org.mustangproject.TradeParty as _TradeParty
 
 fun TradeParty.build(): _TradeParty? =
@@ -31,6 +33,30 @@ fun TradeParty.build(): _TradeParty? =
         .setStreet(street?.trimToNull())
         .setLocation(location?.trimToNull())
         .setCountry(country?.trimToNull())
+        .setLegalOrganisation(
+            LegalOrganisation()
+                .also { org ->
+                    org.setTradingBusinessName(name.trim())
+
+                    //
+                    // Using the register nr (Handelsregister-Nr) for identification without a scheme (BT-30),
+                    // if no VAT-ID is present for the trade party.
+                    //
+                    // Otherwise without VAT-ID and any other identification, a BR-CO-26 validation error might happen,
+                    // as discussed here: https://github.com/OpenIndex/ZUGFeRD-Manager/issues/17
+                    //
+
+                    val tradeRegisterNr = registerNr?.trimToNull()
+                    if (tradeRegisterNr != null) {
+                        org.setSchemedID(
+                            SchemedID(
+                                null,
+                                tradeRegisterNr
+                            )
+                        )
+                    }
+                }
+        )
 
         //
         // Avoid validation errors, when tax ID and VAT ID is used together.

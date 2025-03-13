@@ -83,6 +83,7 @@ import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDia
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDialogGeneralCustomerId
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDialogGeneralLocation
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDialogGeneralName
+import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDialogGeneralRegisterNr
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDialogGeneralStreet
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDialogGeneralTaxId
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppTradePartyDialogGeneralVatId
@@ -389,18 +390,39 @@ private fun TradePartyFormGeneral(
         modifier = Modifier
             .fillMaxWidth(),
     ) {
-        // Trade party name field.
-        TextField(
-            label = Res.string.AppTradePartyDialogGeneralName,
-            value = value.name,
-            onValueChange = { newName ->
-                onUpdate(
-                    value.copy(name = newName)
-                )
-            },
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth(),
-        )
+        ) {
+            // Trade party name field.
+            TextField(
+                label = Res.string.AppTradePartyDialogGeneralName,
+                value = value.name,
+                onValueChange = { newName ->
+                    onUpdate(
+                        value.copy(name = newName)
+                    )
+                },
+                modifier = Modifier
+                    .weight(0.67f),
+            )
+
+            if (isCustomer) {
+                // Trade party customer ID field.
+                TextField(
+                    label = Res.string.AppTradePartyDialogGeneralCustomerId,
+                    value = value.id ?: "",
+                    onValueChange = { newID ->
+                        onUpdate(
+                            value.copy(id = newID)
+                        )
+                    },
+                    modifier = Modifier
+                        .weight(0.33f),
+                )
+            }
+        }
 
         // Trade party street field.
         TextField(
@@ -504,20 +526,18 @@ private fun TradePartyFormGeneral(
                     .weight(0.33f),
             )
 
-            if (isCustomer) {
-                // Trade party customer ID field.
-                TextField(
-                    label = Res.string.AppTradePartyDialogGeneralCustomerId,
-                    value = value.id ?: "",
-                    onValueChange = { newID ->
-                        onUpdate(
-                            value.copy(id = newID)
-                        )
-                    },
-                    modifier = Modifier
-                        .weight(0.33f),
-                )
-            }
+            // Trade party register nr field.
+            TextField(
+                label = Res.string.AppTradePartyDialogGeneralRegisterNr,
+                value = value.registerNr ?: "",
+                onValueChange = { newRegisterNr ->
+                    onUpdate(
+                        value.copy(registerNr = newRegisterNr)
+                    )
+                },
+                modifier = Modifier
+                    .weight(0.33f),
+            )
         }
     }
 }

@@ -33,6 +33,7 @@ PLEASE CONSIDER THESE NOTES BEFORE STARTING YOUR TRANSLATION WORK!
     <string name="AppTradePartyDialogGeneralCountry">Land</string>
     <string name="AppTradePartyDialogGeneralVatId">USt-Id-Nr</string>
     <string name="AppTradePartyDialogGeneralTaxId">Steuer-Nr</string>
+    <string name="AppTradePartyDialogGeneralRegisterNr">Handelsregister-Nr</string>
     <string name="AppTradePartyDialogGeneralCustomerId">Kunden-Nr</string>
 
     <string name="AppTradePartyDialogContact">Kontakt</string>
