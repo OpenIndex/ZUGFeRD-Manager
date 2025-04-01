@@ -32,6 +32,9 @@ enum class Language(
     EN(
         code = "en",
     ),
+    FR(
+        code = "fr",
+    ),
 
     ;
 
