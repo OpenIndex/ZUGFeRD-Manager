@@ -72,7 +72,7 @@ fun Invoice.build(method: PaymentMethod): _Invoice =
                         DATE_FORMAT.format(dueDate.toJavaDate()),
                     )
 
-                    else -> null
+                    //else -> null
                 }
             }
         )
@@ -235,6 +235,7 @@ private class CustomZUGFeRDExporterFromPDFA : ZUGFeRDExporterFromPDFA() {
             return
         }
 
+        @Suppress("KotlinConstantConditions")
         if (theExporter is ZUGFeRDExporterFromA1) {
             theExporter = object : ZUGFeRDExporterFromA1() {
                 init {
