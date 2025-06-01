@@ -31,7 +31,7 @@
 # see https://github.com/JetBrains/JetBrainsRuntime/releases
 #
 
-JBR_VERSION="21.0.6b825.69"
+JBR_VERSION="21.0.7b1020.35"
 
 set -e
 BASE_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
