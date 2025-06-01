@@ -59,8 +59,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.platform.Clipboard
+import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -84,6 +84,7 @@ import de.openindex.zugferd.manager.model.ValidationType
 import de.openindex.zugferd.manager.utils.ValidationMessage
 import de.openindex.zugferd.manager.utils.createDragAndDropTarget
 import de.openindex.zugferd.manager.utils.pluralStringResource
+import de.openindex.zugferd.manager.utils.putText
 import de.openindex.zugferd.manager.utils.stringResource
 import de.openindex.zugferd.manager.utils.title
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppCheck
@@ -690,8 +691,9 @@ private fun ValidationMessage(message: ValidationMessage) =
                     .padding(top = 8.dp, start = 16.dp, end = 16.dp)
                     .fillMaxWidth(),
             ) {
+                val scope = rememberCoroutineScope()
                 val isDarkMode = LocalAppState.current.preferences.darkMode ?: isSystemInDarkTheme()
-                val clipboard = LocalClipboardManager.current
+                val clipboard: Clipboard = LocalClipboard.current
 
                 Icon(
                     imageVector = message.severity.icon,
@@ -726,9 +728,11 @@ private fun ValidationMessage(message: ValidationMessage) =
                 ) {
                     Button(
                         onClick = {
-                            clipboard.setText(
-                                AnnotatedString(message.message)
-                            )
+                            scope.launch {
+                                clipboard.putText(
+                                    text = message.message,
+                                )
+                            }
                         },
                     ) {
                         Icon(
