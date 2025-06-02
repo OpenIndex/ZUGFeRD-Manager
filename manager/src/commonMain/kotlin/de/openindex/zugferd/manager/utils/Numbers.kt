@@ -40,13 +40,6 @@ val Number.formatAsPercentage: String
         grouped = false,
     )
 
-//val Number.formatAsPrice: String
-//    get() = format(
-//        minPrecision = 2,
-//        maxPrecision = 2,
-//        grouped = false,
-//    )
-
 @Suppress("unused")
 val Number.formatAsQuantity: String
     get() = format(
@@ -56,46 +49,29 @@ val Number.formatAsQuantity: String
     )
 
 expect fun String.parseNumber(
-    minPrecision: Int = -1,
-    maxPrecision: Int = -1,
     grouped: Boolean = false,
 ): Number?
 
 fun String.parseDouble(
-    minPrecision: Int = -1,
-    maxPrecision: Int = -1,
     grouped: Boolean = false,
 ): Double? = parseNumber(
-    minPrecision = minPrecision,
-    maxPrecision = maxPrecision,
     grouped = grouped,
 )?.toDouble()
 
-@Suppress("unused")
 fun String.parseFloat(
-    minPrecision: Int = -1,
-    maxPrecision: Int = -1,
     grouped: Boolean = false,
 ): Float? = parseNumber(
-    minPrecision = minPrecision,
-    maxPrecision = maxPrecision,
     grouped = grouped,
 )?.toFloat()
 
-@Suppress("unused")
 fun String.parseLong(
     grouped: Boolean = false,
 ): Long? = parseNumber(
-    minPrecision = 0,
-    maxPrecision = 0,
     grouped = grouped,
 )?.toLong()
 
-@Suppress("unused")
 fun String.parseInt(
     grouped: Boolean = false,
 ): Int? = parseNumber(
-    minPrecision = 0,
-    maxPrecision = 0,
     grouped = grouped,
 )?.toInt()

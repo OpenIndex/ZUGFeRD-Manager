@@ -48,7 +48,7 @@ actual fun Number.format(
 
 actual fun Number.formatPrice(
     currencyCode: String,
-    grouped: Boolean
+    grouped: Boolean,
 ): String =
     NumberFormat
         .getCurrencyInstance(Locale.getDefault())
@@ -66,22 +66,15 @@ actual fun Number.formatPrice(
         .format(this)
 
 actual fun String.parseNumber(
-    minPrecision: Int,
-    maxPrecision: Int,
-    grouped: Boolean
+    grouped: Boolean,
 ): Number? = try {
     NumberFormat
         .getInstance(Locale.getDefault())
         .apply {
             isGroupingUsed = grouped
-            if (maxPrecision >= 0) {
-                maximumFractionDigits = maxPrecision
-            }
-            if (minPrecision >= 0) {
-                minimumFractionDigits = minPrecision
-            }
+            roundingMode = RoundingMode.HALF_UP
         }
         .parse(this.trim())
-} catch (e: ParseException) {
+} catch (_: ParseException) {
     null
 }
