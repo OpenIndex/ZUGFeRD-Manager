@@ -22,6 +22,7 @@
 package de.openindex.zugferd.manager.utils
 
 import de.openindex.zugferd.manager.APP_LOGGER
+import java.math.RoundingMode
 import java.text.NumberFormat
 import java.text.ParseException
 import java.util.Currency
@@ -35,6 +36,7 @@ actual fun Number.format(
     .getInstance(Locale.getDefault())
     .apply {
         isGroupingUsed = grouped
+        roundingMode = RoundingMode.HALF_UP
         if (maxPrecision >= 0) {
             maximumFractionDigits = maxPrecision
         }
@@ -52,6 +54,7 @@ actual fun Number.formatPrice(
         .getCurrencyInstance(Locale.getDefault())
         .apply {
             isGroupingUsed = grouped
+            roundingMode = RoundingMode.HALF_UP
             try {
                 currency = Currency.getInstance(currencyCode)
                 minimumFractionDigits = currency.defaultFractionDigits
