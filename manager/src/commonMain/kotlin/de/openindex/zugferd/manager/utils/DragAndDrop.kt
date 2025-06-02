@@ -30,6 +30,7 @@ import io.github.vinceglb.filekit.core.PlatformFile
 
 @OptIn(ExperimentalComposeUiApi::class)
 fun createDragAndDropTarget(
+    extensions: List<String> = listOf(".pdf"),
     onDrop: (pdfFile: PlatformFile) -> Unit,
 ): DragAndDropTarget =
     object : DragAndDropTarget {
@@ -39,11 +40,13 @@ fun createDragAndDropTarget(
                 return false
             }
 
-            val pdfFileUri = dragData.readFiles().firstOrNull {
-                it.lowercase().endsWith(".pdf")
+            val droppedFileUri = dragData.readFiles().firstOrNull { path ->
+                extensions.firstOrNull { extension ->
+                    path.endsWith(extension, true)
+                } != null
             } ?: return false
 
-            val pdfFile = getPlatformFileFromURI(pdfFileUri)
+            val pdfFile = getPlatformFileFromURI(droppedFileUri)
             onDrop(pdfFile)
             return true
         }

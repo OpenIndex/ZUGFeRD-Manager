@@ -84,10 +84,10 @@ private class CustomValidator : ZUGFeRDValidator() {
     }
 }
 
-actual suspend fun validatePdf(pdf: PlatformFile): Validation {
-    return pdf.file
+actual suspend fun validateInvoiceFile(invoiceFile: PlatformFile): Validation {
+    return invoiceFile.file
         .inputStream().use { input ->
             CustomValidator()
-                .getValidation(input, pdf.name)
+                .getValidation(input, invoiceFile.name)
         }
 }

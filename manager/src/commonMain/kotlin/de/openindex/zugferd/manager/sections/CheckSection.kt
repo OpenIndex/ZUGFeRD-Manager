@@ -123,14 +123,15 @@ import kotlinx.coroutines.launch
 fun CheckSection(state: CheckSectionState) {
     val scope = rememberCoroutineScope()
     val appState = LocalAppState.current
-    val selectedPdf = state.selectedPdf
+    val selectedInvoice = state.invoiceFile
 
     val dragAndDropCallback = remember {
         createDragAndDropTarget(
-            onDrop = { pdfFile ->
+            extensions = listOf(".pdf", ".xml"),
+            onDrop = { droppedFile ->
                 scope.launch {
-                    state.selectPdf(
-                        pdf = pdfFile,
+                    state.selectInvoice(
+                        invoiceFile = droppedFile,
                         appState = appState,
                     )
                 }
@@ -139,7 +140,7 @@ fun CheckSection(state: CheckSectionState) {
     }
 
     // Show an empty view, if no PDF file was selected.
-    if (selectedPdf == null) {
+    if (selectedInvoice == null) {
         EmptyView(state)
     }
 
@@ -202,7 +203,7 @@ fun CheckSectionActions(state: CheckSectionState) {
             tooltip = Res.string.AppCheckSelectInfo,
             onClick = {
                 scope.launch(Dispatchers.IO) {
-                    state.selectPdf(
+                    state.selectInvoice(
                         appState = appState,
                     )
                 }
@@ -245,8 +246,8 @@ private fun EmptyView(state: CheckSectionState) {
 @Composable
 private fun CheckView(state: CheckSectionState) {
     val scope = rememberCoroutineScope()
-    val selectedPdf = state.selectedPdf!!
-    val validation = state.selectedPdfValidation
+    val selectedPdf = state.invoiceFile!!
+    val validation = state.invoiceValidation
 
     Column(
         verticalArrangement = Arrangement.spacedBy(24.dp),
@@ -460,28 +461,37 @@ private fun CheckView(state: CheckSectionState) {
  */
 @Composable
 private fun DetailsView(state: CheckSectionState) {
-    val selectedPdf = state.selectedPdf
-    var tabState by remember { mutableStateOf(0) }
-    val isPdfTabSelected by derivedStateOf { tabState == 0 }
-    val isHtmlTabSelected by derivedStateOf { tabState == 1 && state.selectedPdfHtml != null }
-    val isXmlTabSelected by derivedStateOf { tabState == 2 && state.selectedPdfXml != null }
+    val selectedInvoice = state.invoiceFile
+    val isPdfInvoice by derivedStateOf { state.isPdfInvoice }
+    //val isXmlInvoice by derivedStateOf { state.isXmlInvoice }
+
+    var tabState by remember {
+        mutableStateOf(
+            if (isPdfInvoice) 0 else 1
+        )
+    }
+    val isPdfTabSelected by derivedStateOf { isPdfInvoice && tabState == 0 }
+    val isHtmlTabSelected by derivedStateOf { tabState == 1 && state.invoiceHtml != null }
+    val isXmlTabSelected by derivedStateOf { tabState == 2 && state.invoiceXml != null }
 
     TabRow(
         selectedTabIndex = tabState,
     ) {
         // Add tab for PDF viewer.
-        Tab(
-            selected = isPdfTabSelected,
-            onClick = { tabState = 0 },
-            text = {
-                Label(
-                    text = Res.string.AppCheckDetailsPdf,
-                )
-            },
-        )
+        if (isPdfInvoice) {
+            Tab(
+                selected = isPdfTabSelected,
+                onClick = { tabState = 0 },
+                text = {
+                    Label(
+                        text = Res.string.AppCheckDetailsPdf,
+                    )
+                },
+            )
+        }
 
         // Add tab for HTML viewer.
-        if (state.selectedPdfHtml != null) {
+        if (state.invoiceHtml != null) {
             Tab(
                 selected = isHtmlTabSelected,
                 onClick = { tabState = 1 },
@@ -494,7 +504,7 @@ private fun DetailsView(state: CheckSectionState) {
         }
 
         // Add tab for XML viewer.
-        if (state.selectedPdfXml != null) {
+        if (state.invoiceXml != null) {
             Tab(
                 selected = isXmlTabSelected,
                 onClick = { tabState = 2 },
@@ -510,7 +520,7 @@ private fun DetailsView(state: CheckSectionState) {
     // Show PDF viewer.
     if (isPdfTabSelected) {
         PdfViewer(
-            pdf = selectedPdf!!,
+            pdf = selectedInvoice!!,
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -518,7 +528,7 @@ private fun DetailsView(state: CheckSectionState) {
     // Show HTML viewer.
     if (isHtmlTabSelected) {
         WebViewer(
-            html = state.selectedPdfHtml ?: "",
+            html = state.invoiceHtml ?: "",
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -526,7 +536,7 @@ private fun DetailsView(state: CheckSectionState) {
     // Show XML viewer.
     if (isXmlTabSelected) {
         XmlViewer(
-            xml = state.selectedPdfXml ?: "",
+            xml = state.invoiceXml ?: "",
             modifier = Modifier.fillMaxSize(),
         )
     }
@@ -537,7 +547,7 @@ private fun DetailsView(state: CheckSectionState) {
  */
 @Composable
 private fun ValidationSummary(state: CheckSectionState) {
-    val validation = state.selectedPdfValidation!!
+    val validation = state.invoiceValidation!!
 
     Card(
         modifier = Modifier
@@ -652,7 +662,7 @@ private fun ValidationSummary(state: CheckSectionState) {
  */
 @Composable
 private fun ValidationMessages(state: CheckSectionState) {
-    val validation = state.selectedPdfValidation!!
+    val validation = state.invoiceValidation!!
     val filterType = state.filterType
     val filterSeverity = state.filterSeverity
 

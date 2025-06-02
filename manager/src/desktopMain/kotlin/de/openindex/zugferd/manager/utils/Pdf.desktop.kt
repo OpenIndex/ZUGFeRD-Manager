@@ -42,7 +42,6 @@ import org.apache.xmpbox.xml.DomXmpParser
 import org.apache.xmpbox.xml.XmpParsingException
 import org.mustangproject.ZUGFeRD.ZUGFeRDExporterFromPDFA
 import org.mustangproject.ZUGFeRD.ZUGFeRDImporter
-import org.mustangproject.ZUGFeRD.ZUGFeRDVisualizer
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
@@ -53,31 +52,6 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Collections
 import java.util.GregorianCalendar
-import kotlin.io.path.pathString
-import kotlin.io.path.writer
-
-@Suppress("SpellCheckingInspection")
-private val CUSTOM_VISUALIZATION_CSS = """
-    body > form {
-        position: fixed !important;
-        left: 0 !important;
-        right: 0 !important;
-        z-index: 1 !important;
-    }
-
-    .inhalt {
-        padding-top: 75px !important;    
-    }
-    
-    .menue > .innen {
-        text-align: center !important;
-    }
-    
-    .menue > .innen > button {
-        font-family: sans-serif !important;
-        font-size: 14px !important;
-    }
-""".trimIndent()
 
 actual suspend fun getPdfArchiveVersion(pdfFile: PlatformFile): Int {
     return try {
@@ -325,44 +299,4 @@ actual fun getXmlFromPdf(pdf: PlatformFile): String? {
         APP_LOGGER.error("PDF read error.", e)
         null
     }
-}
-
-actual suspend fun getHtmlVisualizationFromPdf(pdf: PlatformFile): String? {
-    val xmlData = getXmlFromPdf(pdf) ?: return null
-    val tempXmlFile = withContext(Dispatchers.IO) {
-        val tempXmlFile = Files.createTempFile("zugferd-", ".xml")
-        tempXmlFile.writer().use { writer ->
-            writer.write(xmlData)
-        }
-        tempXmlFile
-    }
-
-    return try {
-        ZUGFeRDVisualizer()
-            .visualize(
-                tempXmlFile.pathString,
-                ZUGFeRDVisualizer.Language.DE,
-            )
-            // HACK: Apply custom css.
-            .replace(
-                "</head>",
-                "\n<style>\n${CUSTOM_VISUALIZATION_CSS}</style>\n</head>"
-            )
-
-        //APP_LOGGER.debug("generated HTML\n${html}")
-    } catch (e: Exception) {
-        APP_LOGGER.error("Can't create HTML visualization.", e)
-        null
-    }
-
-    /*
-    try {
-        ExportResource("/xrechnung-viewer.css")
-        ExportResource("/xrechnung-viewer.js")
-
-        println("xrechnung-viewer.css and xrechnung-viewer.js written as well (to local working dir)")
-    } catch (e: java.lang.Exception) {
-        LOGGER.error(e.message, e)
-    }
-    */
 }

@@ -51,4 +51,4 @@ data class ValidationMessage(
     val severity: ValidationSeverity,
 )
 
-expect suspend fun validatePdf(pdf: PlatformFile): Validation
+expect suspend fun validateInvoiceFile(invoiceFile: PlatformFile): Validation

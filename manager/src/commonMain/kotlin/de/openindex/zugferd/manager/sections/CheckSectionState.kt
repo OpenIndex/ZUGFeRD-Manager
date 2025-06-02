@@ -25,15 +25,17 @@ import androidx.compose.runtime.mutableStateOf
 import de.openindex.zugferd.manager.AppState
 import de.openindex.zugferd.manager.model.ValidationSeverity
 import de.openindex.zugferd.manager.model.ValidationType
+import de.openindex.zugferd.manager.utils.InvoiceFileFormat
 import de.openindex.zugferd.manager.utils.SectionState
 import de.openindex.zugferd.manager.utils.Validation
-import de.openindex.zugferd.manager.utils.getHtmlVisualizationFromPdf
 import de.openindex.zugferd.manager.utils.getPrettyPrintedXml
 import de.openindex.zugferd.manager.utils.getString
 import de.openindex.zugferd.manager.utils.getXmlFromPdf
+import de.openindex.zugferd.manager.utils.readAsString
 import de.openindex.zugferd.manager.utils.title
 import de.openindex.zugferd.manager.utils.trimToNull
-import de.openindex.zugferd.manager.utils.validatePdf
+import de.openindex.zugferd.manager.utils.validateInvoiceFile
+import de.openindex.zugferd.manager.utils.visualizeInvoiceXml
 import de.openindex.zugferd.manager.utils.writeJson
 import de.openindex.zugferd.zugferd_manager.generated.resources.AppCheckSelectFile
 import de.openindex.zugferd.zugferd_manager.generated.resources.Res
@@ -41,67 +43,76 @@ import io.github.vinceglb.filekit.core.FileKit
 import io.github.vinceglb.filekit.core.PickerMode
 import io.github.vinceglb.filekit.core.PickerType
 import io.github.vinceglb.filekit.core.PlatformFile
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 
 class CheckSectionState : SectionState() {
-    private var _selectedPdf = mutableStateOf<PlatformFile?>(null)
-    val selectedPdf: PlatformFile?
-        get() = _selectedPdf.value
+    private var _invoiceFile = mutableStateOf<PlatformFile?>(null)
+    val invoiceFile: PlatformFile?
+        get() = _invoiceFile.value
+    val invoiceFileFormat: InvoiceFileFormat?
+        get() = if (isPdfInvoice) InvoiceFileFormat.PDF
+        else if (isXmlInvoice) InvoiceFileFormat.XML
+        else null
+    val isPdfInvoice: Boolean
+        get() = invoiceFile?.name?.endsWith(".pdf", true) == true
+    val isXmlInvoice: Boolean
+        get() = invoiceFile?.name?.endsWith(".xml", true) == true
 
-    private var _selectedPdfXml = mutableStateOf<String?>(null)
-    val selectedPdfXml: String?
-        get() = _selectedPdfXml.value
+    private var _invoiceXml = mutableStateOf<String?>(null)
+    val invoiceXml: String?
+        get() = _invoiceXml.value
 
-    private var _selectedPdfHtml = mutableStateOf<String?>(null)
-    val selectedPdfHtml: String?
-        get() = _selectedPdfHtml.value
+    private var _invoiceHtml = mutableStateOf<String?>(null)
+    val invoiceHtml: String?
+        get() = _invoiceHtml.value
 
-    private var _selectedPdfValidation = mutableStateOf<Validation?>(null)
-    val selectedPdfValidation: Validation?
-        get() = _selectedPdfValidation.value
+    private var _invoiceValidation = mutableStateOf<Validation?>(null)
+    val invoiceValidation: Validation?
+        get() = _invoiceValidation.value
 
-    suspend fun selectPdf(appState: AppState) {
-        val pdf = FileKit.pickFile(
-            type = PickerType.File(extensions = listOf("pdf")),
+    suspend fun selectInvoice(appState: AppState) {
+        val invoiceFile = FileKit.pickFile(
+            type = PickerType.File(extensions = listOf("pdf", "xml")),
             mode = PickerMode.Single,
             title = getString(Res.string.AppCheckSelectFile).title(),
             initialDirectory = appState.preferences.previousPdfLocation,
         ) ?: return
 
-        selectPdf(
-            pdf = pdf,
+        selectInvoice(
+            invoiceFile = invoiceFile,
             appState = appState,
         )
     }
 
     @Suppress("UNUSED_PARAMETER")
-    suspend fun selectPdf(pdf: PlatformFile, appState: AppState) {
-        _selectedPdfHtml.value = null
-        _selectedPdfValidation.value = null
-        _selectedPdf.value = pdf
-        _selectedPdfXml.value = getXmlFromPdf(pdf)?.let { getPrettyPrintedXml(it) }?.trimToNull()
+    suspend fun selectInvoice(invoiceFile: PlatformFile, appState: AppState) {
+        _invoiceFile.value = invoiceFile
+        _invoiceHtml.value = null
+        _invoiceXml.value = null
+        _invoiceValidation.value = null
 
-        coroutineScope {
-            launch(Dispatchers.IO) {
-                //delay(2000)
-                _selectedPdfHtml.value = getHtmlVisualizationFromPdf(pdf)
-            }
+        if (invoiceFileFormat == null) {
+            _invoiceFile.value = null
+            throw IllegalArgumentException("Invoice file is neither PDF nor XML!")
         }
 
-        coroutineScope {
-            launch(Dispatchers.IO) {
-                //delay(2000)
-                _selectedPdfValidation.value = validatePdf(pdf)
-                _filterType.value = ValidationType.entries.toList()
-                _filterSeverity.value = ValidationSeverity.entries.toList()
-            }
+        _invoiceXml.value = when (invoiceFileFormat) {
+            InvoiceFileFormat.PDF -> getXmlFromPdf(invoiceFile)
+            InvoiceFileFormat.XML -> invoiceFile.readAsString()
+            else -> null
         }
+            ?.let { getPrettyPrintedXml(it) }
+            ?.trimToNull()
+
+        _invoiceXml.value?.let { xml ->
+            _invoiceHtml.value = visualizeInvoiceXml(xml)
+        }
+        _invoiceValidation.value = validateInvoiceFile(invoiceFile)
+        _filterType.value = ValidationType.entries.toList()
+        _filterSeverity.value = ValidationSeverity.entries.toList()
     }
 
     suspend fun exportValidation(validation: Validation) {
-        val sourceFile = selectedPdf ?: return
+        val sourceFile = invoiceFile ?: return
         val targetFile = FileKit.saveFile(
             bytes = null,
             baseName = sourceFile.name.substringBeforeLast(".")
