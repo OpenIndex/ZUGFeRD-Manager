@@ -63,7 +63,11 @@ actual suspend fun visualizeInvoiceXml(xml: String): String? {
             ZUGFeRDVisualizer()
                 .visualize(
                     tempXmlFile.pathString,
-                    ZUGFeRDVisualizer.Language.DE,
+                    when (getCurrentLanguage()) {
+                        Language.DE -> ZUGFeRDVisualizer.Language.DE
+                        Language.EN -> ZUGFeRDVisualizer.Language.EN
+                        Language.FR -> ZUGFeRDVisualizer.Language.FR
+                    },
                 )
                 // HACK: Apply custom css.
                 .replace(
