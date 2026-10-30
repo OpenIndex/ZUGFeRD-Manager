@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  AppStream metadata for OpenIndex ZUGFeRD-Manager.
+  The release version and date are inserted by the Gradle task "bundleLinuxFlatpak".
+  see https://www.freedesktop.org/software/appstream/docs/
+-->
+<component type="desktop-application">
+  <id>de.openindex.zugferd.manager</id>
+  <name>ZUGFeRD-Manager</name>
+  <summary>Create and validate e-invoices in ZUGFeRD format</summary>
+  <summary xml:lang="de">E-Rechnungen im ZUGFeRD-Format erstellen und prüfen</summary>
+  <developer id="de.openindex">
+    <name>OpenIndex</name>
+  </developer>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>Apache-2.0</project_license>
+  <launchable type="desktop-id">de.openindex.zugferd.manager.desktop</launchable>
+  <url type="homepage">https://github.com/OpenIndex/ZUGFeRD-Manager</url>
+  <url type="bugtracker">https://github.com/OpenIndex/ZUGFeRD-Manager/issues</url>
+
+  <description>
+    <p>
+      A free desktop application for small businesses, that creates and validates e-invoices in ZUGFeRD format.
+    </p>
+    <p xml:lang="de">
+      Eine kostenfreie Desktop-Anwendung für kleine Unternehmen zur Erstellung und Überprüfung von E-Rechnungen im ZUGFeRD-Format.
+    </p>
+    <ul>
+      <li>Turn an existing PDF invoice into a ZUGFeRD e-invoice</li>
+      <li xml:lang="de">Eine vorhandene PDF-Rechnung in eine ZUGFeRD-Rechnung umwandeln</li>
+      <li>Validate your own and received e-invoices</li>
+      <li xml:lang="de">Eigene und erhaltene E-Rechnungen prüfen</li>
+    </ul>
+  </description>
+
+  <screenshots>
+    <screenshot type="default">
+      <caption>Create a ZUGFeRD e-invoice from a PDF invoice</caption>
+      <caption xml:lang="de">ZUGFeRD-Rechnung aus einer PDF-Rechnung erzeugen</caption>
+      <image>https://raw.githubusercontent.com/OpenIndex/ZUGFeRD-Manager/master/share/screenshots/create-finish.png</image>
+    </screenshot>
+    <screenshot>
+      <caption>Validate an e-invoice</caption>
+      <caption xml:lang="de">E-Rechnung prüfen</caption>
+      <image>https://raw.githubusercontent.com/OpenIndex/ZUGFeRD-Manager/master/share/screenshots/verify-summary.png</image>
+    </screenshot>
+  </screenshots>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="@VERSION@" date="@DATE@"/>
+  </releases>
+</component>

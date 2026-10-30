@@ -33,6 +33,7 @@ import org.cef.browser.CefBrowser
 import org.cef.browser.CefRendering
 import org.cef.handler.CefAppHandlerAdapter
 import java.nio.file.Path
+import javax.swing.Timer
 import kotlin.io.path.ExperimentalPathApi
 import kotlin.io.path.absolutePathString
 import kotlin.io.path.createDirectories
@@ -109,13 +110,43 @@ fun getCefBrowser(url: String): CefBrowser {
                 .takeIf { CEF_OFFSCREEN_RENDERING_ENABLED }
                 ?: CefRendering.DEFAULT,
             CEF_TRANSPARENCY_ENABLED,
-        )
+        ).also {
+            it.restorePositionOnScreenChange()
+        }
     } else {
         CEF_BROWSER!!.let {
             it.stopLoad()
             it.loadURL(url)
             it
         }
+    }
+}
+
+/**
+ * Workaround for the native browser window being placed in the top left corner
+ * of the application window, after the window was moved to another screen.
+ *
+ * Resizing the browser component restores the correct position. Therefore, we
+ * briefly change its size, after the graphics configuration of the component has
+ * changed and the screen change was processed.
+ */
+private fun CefBrowser.restorePositionOnScreenChange() {
+    val component = uiComponent
+    val timer = Timer(250) {
+        if (isClosed || !component.isShowing) {
+            return@Timer
+        }
+
+        val size = component.size
+        component.setSize(size.width, size.height - 1)
+        component.validate()
+        component.setSize(size.width, size.height)
+        component.validate()
+    }
+    timer.isRepeats = false
+
+    component.addPropertyChangeListener("graphicsConfiguration") {
+        timer.restart()
     }
 }
 

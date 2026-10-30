@@ -3,6 +3,7 @@
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.org.apache.commons.lang3.SystemUtils
 import java.nio.file.LinkOption
+import java.time.LocalDate
 import java.util.Calendar
 import java.util.Properties
 import kotlin.io.path.isExecutable
@@ -406,6 +407,7 @@ tasks {
             dependsOn("bundleLinuxArchive")
             dependsOn("bundleLinuxDeb")
             dependsOn("bundleLinuxRpm")
+            dependsOn("bundleLinuxFlatpak")
         }
         if (isMac) {
             dependsOn("bundleMacDmg")
@@ -464,6 +466,76 @@ tasks {
 
                 val arch = if (isArm64) "arm64" else "x64"
                 "${project.name}-${libs.versions.application.pkg.get()}-linux-${arch}.rpm"
+            }
+        }
+
+        register("bundleLinuxFlatpak") {
+            group = "OpenIndex"
+            description = "Create Flatpak bundle for Linux."
+            dependsOn("createReleaseDistributable")
+
+            val appId = "de.openindex.zugferd.manager"
+            val arch = if (isArm64) "arm64" else "x64"
+            val flatpakArch = if (isArm64) "aarch64" else "x86_64"
+            val flatpakDir = project.layout.buildDirectory.dir("flatpak").get().asFile
+            val sourceDir = flatpakDir.resolve("source")
+            val bundleFile = rootProject.layout.buildDirectory
+                .file("${project.name}-${libs.versions.application.pkg.get()}-linux-${arch}.flatpak")
+                .get().asFile
+
+            doLast {
+                // Prepare source directory for flatpak-builder.
+                delete(sourceDir)
+                copy {
+                    from(rootProject.layout.projectDirectory.dir("share").dir("flatpak"))
+                    into(sourceDir)
+                    filesMatching("*.metainfo.xml") {
+                        filter {
+                            it.replace("@VERSION@", libs.versions.application.pkg.get())
+                                .replace("@DATE@", LocalDate.now().toString())
+                        }
+                    }
+                }
+                copy {
+                    from(project.layout.buildDirectory.dir("compose/binaries/main-release/app/${project.name}"))
+                    into(sourceDir.resolve("app"))
+                }
+                copy {
+                    from(rootProject.layout.projectDirectory.dir("share").dir("icons").file("application.svg"))
+                    from(rootProject.layout.projectDirectory.dir("share").dir("icons").dir("application.iconset")) {
+                        include("icon_*x*.png")
+                        exclude("*@2x.png")
+                    }
+                    into(sourceDir.resolve("icons"))
+                }
+
+                // Build the application into a local repository and export it as single file bundle.
+                exec {
+                    commandLine(
+                        "flatpak", "remote-add", "--user", "--if-not-exists",
+                        "flathub", "https://dl.flathub.org/repo/flathub.flatpakrepo",
+                    )
+                }
+                exec {
+                    workingDir = flatpakDir
+                    commandLine(
+                        "flatpak-builder", "--user", "--force-clean", "--disable-rofiles-fuse",
+                        "--install-deps-from=flathub", "--arch=${flatpakArch}",
+                        "--repo=${flatpakDir.resolve("repo")}",
+                        flatpakDir.resolve("build"),
+                        sourceDir.resolve("${appId}.yml"),
+                    )
+                }
+                bundleFile.parentFile.mkdirs()
+                exec {
+                    commandLine(
+                        "flatpak", "build-bundle", "--arch=${flatpakArch}",
+                        "--runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo",
+                        flatpakDir.resolve("repo"),
+                        bundleFile,
+                        appId,
+                    )
+                }
             }
         }
 

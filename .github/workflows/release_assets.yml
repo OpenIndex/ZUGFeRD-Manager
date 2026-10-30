@@ -47,6 +47,15 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -k "${APPLE_KEYCHAIN_PASSWORD}" "${KEYCHAIN_PATH}"
           security list-keychain -d user -s "${KEYCHAIN_PATH}"
 
+      - name: Setup environment for Linux
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+          # flatpak-builder requires unprivileged user namespaces, which are restricted by AppArmor on Ubuntu runners.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+
       - name: Setup environment for Windows
         if: ${{ matrix.os == 'windows-latest' }}
         shell: bash
