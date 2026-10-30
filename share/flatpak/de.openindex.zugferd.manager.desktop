@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=ZUGFeRD-Manager
+GenericName=E-Invoice Manager
+GenericName[de]=E-Rechnungs-Manager
+Comment=Create and validate e-invoices in ZUGFeRD format
+Comment[de]=E-Rechnungen im ZUGFeRD-Format erstellen und prüfen
+Icon=de.openindex.zugferd.manager
+Exec=zugferd-manager
+Terminal=false
+Categories=Office;Finance;
+Keywords=ZUGFeRD;Factur-X;XRechnung;Invoice;E-Invoice;Rechnung;E-Rechnung;PDF;
+StartupWMClass=de-openindex-zugferd-manager-MainKt

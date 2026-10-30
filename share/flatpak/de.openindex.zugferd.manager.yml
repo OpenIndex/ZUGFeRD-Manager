@@ -1,0 +1,47 @@
+#
+# Flatpak manifest for OpenIndex ZUGFeRD-Manager.
+#
+# The application is not compiled by flatpak-builder. Instead, the application
+# bundle created by "./gradlew createReleaseDistributable" (including the
+# stripped down JetBrains Runtime) is copied into the Flatpak. The Gradle task
+# "bundleLinuxFlatpak" prepares the source directory and builds the bundle.
+#
+# see https://docs.flatpak.org/en/latest/manifests.html
+#
+
+id: de.openindex.zugferd.manager
+runtime: org.freedesktop.Platform
+runtime-version: '26.08'
+sdk: org.freedesktop.Sdk
+command: zugferd-manager
+
+finish-args:
+  # The application uses the X11 toolkit of AWT, Wayland is supported via XWayland.
+  - --share=ipc
+  - --socket=x11
+  # Hardware acceleration for Compose (Skiko) and JCEF.
+  - --device=dri
+  # Read and write invoices like a regularly installed application.
+  - --filesystem=home
+
+modules:
+  - name: zugferd-manager
+    buildsystem: simple
+    # The application bundle contains prebuilt binaries (JBR, JCEF, Skiko), that must not be modified.
+    build-options:
+      no-debuginfo: true
+      strip: false
+    build-commands:
+      - mkdir -p /app/lib
+      - cp -a app /app/lib/zugferd-manager
+      - install -Dm755 zugferd-manager.sh /app/bin/zugferd-manager
+      - install -Dm644 de.openindex.zugferd.manager.desktop /app/share/applications/de.openindex.zugferd.manager.desktop
+      - install -Dm644 de.openindex.zugferd.manager.metainfo.xml /app/share/metainfo/de.openindex.zugferd.manager.metainfo.xml
+      - install -Dm644 icons/application.svg /app/share/icons/hicolor/scalable/apps/de.openindex.zugferd.manager.svg
+      - |
+        for size in 16 32 128 256 512; do
+          install -Dm644 "icons/icon_${size}x${size}.png" "/app/share/icons/hicolor/${size}x${size}/apps/de.openindex.zugferd.manager.png"
+        done
+    sources:
+      - type: dir
+        path: .
